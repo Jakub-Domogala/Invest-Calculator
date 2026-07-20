@@ -132,7 +132,9 @@ export function InvestmentChart({
           fill="url(#fill-invested)"
           stroke="var(--color-invested)"
           strokeWidth={2}
-          isAnimationActive={false}
+          isAnimationActive
+          animationDuration={300}
+          animationEasing="ease-out"
         />
         <Area
           dataKey="total"
@@ -140,7 +142,9 @@ export function InvestmentChart({
           fill="url(#fill-total)"
           stroke="var(--color-total)"
           strokeWidth={2}
-          isAnimationActive={false}
+          isAnimationActive
+          animationDuration={300}
+          animationEasing="ease-out"
         />
       </AreaChart>
     </ChartContainer>

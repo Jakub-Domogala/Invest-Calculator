@@ -141,22 +141,24 @@ export function InvestmentCalculator() {
                 disabled={years === 0}
               />
             </div>
-            {stopContributionsEnabled ? (
-              <SliderInputField
-                id="stop-contributions-years"
-                label="Stop after"
-                value={effectiveStopYears}
-                onChange={setStopContributionsYears}
-                min={1}
-                max={Math.max(years, 1)}
-                step={1}
-                unit="yr"
-              />
-            ) : (
-              <p className="text-sm text-muted-foreground">
-                Contributing for the full {years}-year period.
-              </p>
-            )}
+            <div className="min-h-[52px]">
+              {stopContributionsEnabled ? (
+                <SliderInputField
+                  id="stop-contributions-years"
+                  label="Stop after"
+                  value={effectiveStopYears}
+                  onChange={setStopContributionsYears}
+                  min={1}
+                  max={Math.max(years, 1)}
+                  step={1}
+                  unit="yr"
+                />
+              ) : (
+                <p className="flex h-[52px] items-center text-sm text-muted-foreground">
+                  Contributing for the full {years}-year period.
+                </p>
+              )}
+            </div>
           </div>
         </CardContent>
       </Card>
