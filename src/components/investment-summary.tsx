@@ -6,6 +6,11 @@ import type { InvestmentSummary as InvestmentSummaryData } from "@/lib/investmen
 import { formatYearsMonths } from "@/lib/investment-calculator"
 import { cn } from "@/lib/utils"
 
+// Force en-US formatting so the currency symbol is always "$" — with the
+// device's own locale, Intl often renders USD as "US$" to disambiguate it
+// from the local currency.
+const locale = "en-US"
+
 const currencyFormat: Format = {
   style: "currency",
   currency: "USD",
@@ -58,6 +63,7 @@ export function InvestmentSummary({
         <NumberFlow
           value={summary.finalBalance}
           format={currencyFormat}
+          locales={locale}
           plugins={numberFlowPlugins}
           transformTiming={transformTiming}
           spinTiming={spinTiming}
@@ -68,6 +74,7 @@ export function InvestmentSummary({
         <NumberFlow
           value={summary.totalContributions}
           format={currencyFormat}
+          locales={locale}
           plugins={numberFlowPlugins}
           transformTiming={transformTiming}
           spinTiming={spinTiming}
@@ -79,6 +86,7 @@ export function InvestmentSummary({
           value={summary.inflationMultiplier}
           format={multiplierFormat}
           suffix="×"
+          locales={locale}
           plugins={numberFlowPlugins}
           transformTiming={transformTiming}
           spinTiming={spinTiming}
@@ -92,6 +100,7 @@ export function InvestmentSummary({
         <NumberFlow
           value={summary.inflationAdjustedBalance}
           format={currencyFormat}
+          locales={locale}
           plugins={numberFlowPlugins}
           transformTiming={transformTiming}
           spinTiming={spinTiming}
