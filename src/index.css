@@ -128,3 +128,40 @@
     @apply font-sans;
     }
 }
+
+/*
+ * The slider positions its thumb and filled track via `inset-inline-start:
+ * var(--position)` / `width: var(--start-position)`. Browsers don't animate a
+ * property whose value only *references* a changing custom property unless
+ * that property is registered with `@property` - otherwise the position
+ * jumps instantly no matter what `transition` classes are applied. Once
+ * registered, transitioning the custom property itself animates smoothly.
+ */
+@property --position {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 0%;
+}
+
+@property --start-position {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 0%;
+}
+
+[data-slot="slider-thumb"] {
+  transition-property: color, box-shadow, background-color, --position;
+  transition-duration: 200ms;
+  transition-timing-function: ease-out;
+}
+
+[data-slot="slider-range"] {
+  transition-property: --start-position;
+  transition-duration: 200ms;
+  transition-timing-function: ease-out;
+}
+
+[data-slot="slider-thumb"][data-dragging],
+[data-slot="slider-range"][data-dragging] {
+  transition: none;
+}
