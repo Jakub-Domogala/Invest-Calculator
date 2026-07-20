@@ -62,7 +62,7 @@ export function InvestmentChart({
   return (
     <ChartContainer
       config={chartConfig}
-      className={cn("aspect-auto h-72 w-full min-w-0 sm:h-80", className)}
+      className={cn("aspect-auto h-44 w-full min-w-0 sm:h-80", className)}
     >
       <AreaChart data={series} margin={{ left: 8, right: 8, top: 8 }}>
         <defs>
