@@ -64,7 +64,7 @@ export function InvestmentChart({
       config={chartConfig}
       className={cn("aspect-auto h-44 w-full min-w-0 sm:h-80", className)}
     >
-      <AreaChart data={series} margin={{ left: 8, right: 8, top: 8 }}>
+      <AreaChart data={series} margin={{ left: 0, right: 8, top: 8 }}>
         <defs>
           <linearGradient id="fill-total" x1="0" y1="0" x2="0" y2="1">
             <stop offset="5%" stopColor="var(--color-total)" stopOpacity={0.35} />
@@ -98,7 +98,7 @@ export function InvestmentChart({
           tickFormatter={(value: number) => compactCurrencyFormatter.format(value)}
           tickLine={false}
           axisLine={false}
-          width={56}
+          width={44}
         />
         <ChartTooltip
           content={

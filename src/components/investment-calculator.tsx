@@ -62,16 +62,11 @@ export function InvestmentCalculator() {
   const totalMonths = Math.round(years * 12)
 
   return (
-    <div className="mx-auto flex min-h-svh max-w-6xl flex-col gap-6 p-6 max-sm:h-svh max-sm:snap-y max-sm:snap-proximity max-sm:overflow-y-auto max-sm:scroll-pt-6">
-      <header className="flex items-center justify-between gap-4 max-sm:shrink-0 max-sm:snap-start">
-        <div>
-          <h1 className="font-heading text-2xl font-medium">
-            Investment Calculator
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Adjust any value below — everything recalculates instantly.
-          </p>
-        </div>
+    <div className="mx-auto flex min-h-svh max-w-6xl flex-col gap-6 p-6 max-sm:h-svh max-sm:snap-y max-sm:snap-proximity max-sm:overflow-y-auto max-sm:pb-0">
+      <header className="flex items-center justify-between gap-4 max-sm:shrink-0 max-sm:snap-start max-sm:scroll-mt-6">
+        <h1 className="font-heading text-2xl font-medium">
+          Investment Calculator
+        </h1>
         <ThemeToggle />
       </header>
 
@@ -163,31 +158,40 @@ export function InvestmentCalculator() {
         </CardContent>
       </Card>
 
-      <Card className="max-sm:shrink-0 max-sm:snap-start">
-        <CardHeader>
-          <CardTitle>Growth over time</CardTitle>
-          <CardDescription>
-            Money invested vs. total value, compounding monthly over{" "}
-            {formatYearsMonths(totalMonths)}.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-6 lg:flex-row">
-          <InvestmentChart
-            series={series}
-            totalMonths={totalMonths}
-            className="lg:flex-1"
-          />
+      {/* On mobile this wrapper is capped at exactly one viewport tall, with
+          the card at its natural height and the spacer below claiming
+          whatever room is left over via flex-1. That bounds the max scroll
+          position to right where the card is fully visible, instead of a
+          fixed-height spacer adding extra scrollable room past it. */}
+      <div className="max-sm:flex max-sm:h-svh max-sm:shrink-0 max-sm:flex-col">
+        <Card className="max-sm:shrink-0 max-sm:snap-start max-sm:scroll-mt-[23px] max-sm:[--card-spacing:--spacing(3)]">
+          <CardHeader>
+            <CardTitle>Growth over time</CardTitle>
+            <CardDescription>
+              Money invested vs. total value, compounding monthly over{" "}
+              {formatYearsMonths(totalMonths)}.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-6 lg:flex-row">
+            <InvestmentChart
+              series={series}
+              totalMonths={totalMonths}
+              className="lg:flex-1"
+            />
 
-          <Separator orientation="vertical" className="hidden lg:block" />
-          <Separator className="lg:hidden" />
+            <Separator orientation="vertical" className="hidden lg:block" />
+            <Separator className="lg:hidden" />
 
-          <InvestmentSummary
-            summary={summary}
-            totalMonths={totalMonths}
-            className="lg:w-56"
-          />
-        </CardContent>
-      </Card>
+            <InvestmentSummary
+              summary={summary}
+              totalMonths={totalMonths}
+              className="lg:w-56"
+            />
+          </CardContent>
+        </Card>
+
+        <div aria-hidden className="hidden max-sm:block max-sm:flex-1" />
+      </div>
     </div>
   )
 }

@@ -70,43 +70,50 @@ export function InvestmentSummary({
           opacityTiming={opacityTiming}
         />
       </Stat>
-      <Stat label="Total contributions" description="Initial + monthly, paid in">
-        <NumberFlow
-          value={summary.totalContributions}
-          format={currencyFormat}
-          locales={locale}
-          plugins={numberFlowPlugins}
-          transformTiming={transformTiming}
-          spinTiming={spinTiming}
-          opacityTiming={opacityTiming}
-        />
-      </Stat>
-      <Stat label="Inflation multiplier" description="Prices vs. today">
-        <NumberFlow
-          value={summary.inflationMultiplier}
-          format={multiplierFormat}
-          suffix="×"
-          locales={locale}
-          plugins={numberFlowPlugins}
-          transformTiming={transformTiming}
-          spinTiming={spinTiming}
-          opacityTiming={opacityTiming}
-        />
-      </Stat>
-      <Stat
-        label="Inflation-adjusted balance"
-        description="Final balance in today's money"
-      >
-        <NumberFlow
-          value={summary.inflationAdjustedBalance}
-          format={currencyFormat}
-          locales={locale}
-          plugins={numberFlowPlugins}
-          transformTiming={transformTiming}
-          spinTiming={spinTiming}
-          opacityTiming={opacityTiming}
-        />
-      </Stat>
+      <div className="flex flex-col gap-5 max-sm:grid max-sm:grid-cols-3 max-sm:gap-3">
+        <Stat
+          label="Total contributions"
+          description="Initial + monthly, paid in"
+          compact
+        >
+          <NumberFlow
+            value={summary.totalContributions}
+            format={currencyFormat}
+            locales={locale}
+            plugins={numberFlowPlugins}
+            transformTiming={transformTiming}
+            spinTiming={spinTiming}
+            opacityTiming={opacityTiming}
+          />
+        </Stat>
+        <Stat label="Inflation multiplier" description="Prices vs. today" compact>
+          <NumberFlow
+            value={summary.inflationMultiplier}
+            format={multiplierFormat}
+            suffix="×"
+            locales={locale}
+            plugins={numberFlowPlugins}
+            transformTiming={transformTiming}
+            spinTiming={spinTiming}
+            opacityTiming={opacityTiming}
+          />
+        </Stat>
+        <Stat
+          label="Inflation-adjusted balance"
+          description="Final balance in today's money"
+          compact
+        >
+          <NumberFlow
+            value={summary.inflationAdjustedBalance}
+            format={currencyFormat}
+            locales={locale}
+            plugins={numberFlowPlugins}
+            transformTiming={transformTiming}
+            spinTiming={spinTiming}
+            opacityTiming={opacityTiming}
+          />
+        </Stat>
+      </div>
     </div>
   )
 }
@@ -115,25 +122,42 @@ function Stat({
   label,
   description,
   emphasize = false,
+  compact = false,
   children,
 }: {
   label: string
   description: string
   emphasize?: boolean
+  compact?: boolean
   children: ReactNode
 }) {
   return (
     <div className="space-y-1">
-      <p className="text-sm text-muted-foreground">{label}</p>
+      <p
+        className={cn(
+          "text-sm text-muted-foreground",
+          compact && "max-sm:text-xs"
+        )}
+      >
+        {label}
+      </p>
       <div
         className={cn(
           "font-mono font-medium tabular-nums",
-          emphasize ? "text-3xl text-primary" : "text-xl"
+          emphasize ? "text-3xl text-primary" : "text-xl",
+          compact && "max-sm:text-sm"
         )}
       >
         {children}
       </div>
-      <p className="text-xs text-muted-foreground">{description}</p>
+      <p
+        className={cn(
+          "text-xs text-muted-foreground",
+          compact && "max-sm:hidden"
+        )}
+      >
+        {description}
+      </p>
     </div>
   )
 }
