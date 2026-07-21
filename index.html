@@ -2,6 +2,26 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <script>
+      // Applies the stored/system theme before first paint, so there's no
+      // flash of the wrong theme while React boots and its own effect runs.
+      ;(function () {
+        try {
+          var stored = localStorage.getItem("theme")
+          var theme =
+            stored === "dark" || stored === "light" || stored === "system"
+              ? stored
+              : "system"
+          var resolved =
+            theme === "system"
+              ? window.matchMedia("(prefers-color-scheme: dark)").matches
+                ? "dark"
+                : "light"
+              : theme
+          document.documentElement.classList.add(resolved)
+        } catch (e) {}
+      })()
+    </script>
     <link rel="icon" type="image/svg+xml" href="%BASE_URL%vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Investment Calculator</title>

@@ -10,8 +10,7 @@ export const INITIAL_INVESTMENT_STEPS = [
 ]
 
 export const MONTHLY_CONTRIBUTION_STEPS = [
-  0, 25, 50, 100, 250, 500, 1_000, 2_500, 5_000, 10_000, 25_000, 50_000,
-  75_000, 100_000,
+  0, 25, 50, 100, 250, 500, 1_000, 2_500, 5_000, 10_000, 25_000, 50_000, 100_000,
 ]
 
 /** Index of the value in `steps` closest to `value`. */

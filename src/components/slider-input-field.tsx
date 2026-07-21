@@ -1,4 +1,5 @@
 import * as React from "react"
+import type { ReactNode } from "react"
 
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -16,6 +17,8 @@ interface SliderInputFieldCommonProps {
   unit?: string
   /** Shown before the number, e.g. "$". */
   prefix?: string
+  /** Extra control rendered to the right of the number input, e.g. a preset button. */
+  endAction?: ReactNode
 }
 
 interface LinearSliderInputFieldProps extends SliderInputFieldCommonProps {
@@ -44,7 +47,7 @@ function isDiscreteField(
 }
 
 export function SliderInputField(props: SliderInputFieldProps) {
-  const { id, label, value, onChange, disabled, unit, prefix } = props
+  const { id, label, value, onChange, disabled, unit, prefix, endAction } = props
   const discrete = isDiscreteField(props)
 
   const min = discrete ? props.steps[0] : props.min
@@ -84,31 +87,34 @@ export function SliderInputField(props: SliderInputFieldProps) {
     <div className="space-y-3">
       <div className="flex items-center justify-between gap-3">
         <Label htmlFor={id}>{label}</Label>
-        <div className="relative">
-          {prefix ? (
-            <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-sm text-muted-foreground">
-              {prefix}
-            </span>
-          ) : null}
-          <Input
-            id={id}
-            type="text"
-            inputMode="decimal"
-            disabled={disabled}
-            value={text}
-            onChange={(event) => handleTextChange(event.target.value)}
-            onBlur={handleBlur}
-            className={cn(
-              "h-8 w-28 text-right",
-              prefix && "pl-6",
-              unit && "pr-8"
-            )}
-          />
-          {unit ? (
-            <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-sm text-muted-foreground">
-              {unit}
-            </span>
-          ) : null}
+        <div className="flex items-center gap-2">
+          {endAction}
+          <div className="relative">
+            {prefix ? (
+              <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-sm text-muted-foreground">
+                {prefix}
+              </span>
+            ) : null}
+            <Input
+              id={id}
+              type="text"
+              inputMode="decimal"
+              disabled={disabled}
+              value={text}
+              onChange={(event) => handleTextChange(event.target.value)}
+              onBlur={handleBlur}
+              className={cn(
+                "h-8 w-28 text-right",
+                prefix && "pl-6",
+                unit && "pr-8"
+              )}
+            />
+            {unit ? (
+              <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-sm text-muted-foreground">
+                {unit}
+              </span>
+            ) : null}
+          </div>
         </div>
       </div>
       <Slider

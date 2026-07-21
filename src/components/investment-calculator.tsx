@@ -1,11 +1,14 @@
 import * as React from "react"
+import { RotateCcw } from "lucide-react"
 
 import { InvestmentChart } from "@/components/investment-chart"
 import { InvestmentSummary } from "@/components/investment-summary"
 import { SliderInputField } from "@/components/slider-input-field"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { Button } from "@/components/ui/button"
 import {
   Card,
+  CardAction,
   CardContent,
   CardDescription,
   CardHeader,
@@ -20,16 +23,47 @@ import {
   MONTHLY_CONTRIBUTION_STEPS,
 } from "@/lib/slider-steps"
 
+const DEFAULT_YEARS = 20
+const DEFAULT_INITIAL_INVESTMENT = 10_000
+const DEFAULT_MONTHLY_CONTRIBUTION = 500
+const DEFAULT_ANNUAL_RETURN_PCT = 7
+const DEFAULT_ANNUAL_INFLATION_PCT = 2.5
+const DEFAULT_STOP_CONTRIBUTIONS_ENABLED = false
+const DEFAULT_STOP_CONTRIBUTIONS_YEARS = 10
+
+// Long-run historical averages, offered as one-tap presets.
+const AVERAGE_INFLATION_PCT = 2.5
+const SP500_AVERAGE_RETURN_PCT = 10
+
 export function InvestmentCalculator() {
-  const [years, setYears] = React.useState(20)
-  const [initialInvestment, setInitialInvestment] = React.useState(10_000)
-  const [monthlyContribution, setMonthlyContribution] = React.useState(500)
-  const [annualReturnPct, setAnnualReturnPct] = React.useState(7)
-  const [annualInflationPct, setAnnualInflationPct] = React.useState(2.5)
+  const [years, setYears] = React.useState(DEFAULT_YEARS)
+  const [initialInvestment, setInitialInvestment] = React.useState(
+    DEFAULT_INITIAL_INVESTMENT
+  )
+  const [monthlyContribution, setMonthlyContribution] = React.useState(
+    DEFAULT_MONTHLY_CONTRIBUTION
+  )
+  const [annualReturnPct, setAnnualReturnPct] = React.useState(
+    DEFAULT_ANNUAL_RETURN_PCT
+  )
+  const [annualInflationPct, setAnnualInflationPct] = React.useState(
+    DEFAULT_ANNUAL_INFLATION_PCT
+  )
   const [stopContributionsEnabled, setStopContributionsEnabled] =
-    React.useState(false)
-  const [stopContributionsYears, setStopContributionsYears] =
-    React.useState(10)
+    React.useState(DEFAULT_STOP_CONTRIBUTIONS_ENABLED)
+  const [stopContributionsYears, setStopContributionsYears] = React.useState(
+    DEFAULT_STOP_CONTRIBUTIONS_YEARS
+  )
+
+  function resetToDefaults() {
+    setYears(DEFAULT_YEARS)
+    setInitialInvestment(DEFAULT_INITIAL_INVESTMENT)
+    setMonthlyContribution(DEFAULT_MONTHLY_CONTRIBUTION)
+    setAnnualReturnPct(DEFAULT_ANNUAL_RETURN_PCT)
+    setAnnualInflationPct(DEFAULT_ANNUAL_INFLATION_PCT)
+    setStopContributionsEnabled(DEFAULT_STOP_CONTRIBUTIONS_ENABLED)
+    setStopContributionsYears(DEFAULT_STOP_CONTRIBUTIONS_YEARS)
+  }
 
   const effectiveStopYears = Math.min(
     stopContributionsYears,
@@ -76,6 +110,17 @@ export function InvestmentCalculator() {
           <CardDescription>
             Set your contributions and expected market conditions.
           </CardDescription>
+          <CardAction>
+            <Button
+              type="button"
+              variant="outline"
+              size="icon-sm"
+              aria-label="Reset to defaults"
+              onClick={resetToDefaults}
+            >
+              <RotateCcw />
+            </Button>
+          </CardAction>
         </CardHeader>
         <CardContent className="grid gap-x-8 gap-y-6 sm:grid-cols-2 lg:grid-cols-3">
           <SliderInputField
@@ -113,6 +158,17 @@ export function InvestmentCalculator() {
             max={25}
             step={0.5}
             unit="%"
+            endAction={
+              <Button
+                type="button"
+                variant="outline"
+                size="xs"
+                aria-label={`Set to the S&P 500 average of ${SP500_AVERAGE_RETURN_PCT}%`}
+                onClick={() => setAnnualReturnPct(SP500_AVERAGE_RETURN_PCT)}
+              >
+                S&amp;P avg
+              </Button>
+            }
           />
           <SliderInputField
             id="annual-inflation"
@@ -123,6 +179,17 @@ export function InvestmentCalculator() {
             max={5}
             step={0.25}
             unit="%"
+            endAction={
+              <Button
+                type="button"
+                variant="outline"
+                size="xs"
+                aria-label={`Set to the average of ${AVERAGE_INFLATION_PCT}%`}
+                onClick={() => setAnnualInflationPct(AVERAGE_INFLATION_PCT)}
+              >
+                avg
+              </Button>
+            }
           />
           <div className="space-y-3">
             <div className="flex items-center justify-between gap-3">
