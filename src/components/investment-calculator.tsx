@@ -62,7 +62,7 @@ export function InvestmentCalculator() {
   const totalMonths = Math.round(years * 12)
 
   return (
-    <div className="mx-auto flex min-h-svh max-w-6xl flex-col gap-6 p-6 max-sm:h-svh max-sm:snap-y max-sm:snap-proximity max-sm:overflow-y-auto max-sm:pb-0">
+    <div className="mx-auto flex min-h-svh max-w-6xl flex-col gap-[30px] p-6 max-sm:h-svh max-sm:snap-y max-sm:snap-mandatory max-sm:overflow-y-auto max-sm:pb-0">
       <header className="flex items-center justify-between gap-4 max-sm:shrink-0 max-sm:snap-start max-sm:scroll-mt-6">
         <h1 className="font-heading text-2xl font-medium">
           Investment Calculator
