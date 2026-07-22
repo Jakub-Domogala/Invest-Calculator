@@ -1,9 +1,9 @@
-import * as React from "react"
 import type { ReactNode } from "react"
 
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Slider } from "@/components/ui/slider"
+import { useNumberInputText } from "@/hooks/use-number-input-text"
 import { closestStepIndex } from "@/lib/slider-steps"
 import { cn } from "@/lib/utils"
 
@@ -19,6 +19,14 @@ interface SliderInputFieldCommonProps {
   prefix?: string
   /** Extra control rendered to the right of the number input, e.g. a preset button. */
   endAction?: ReactNode
+  /**
+   * Widened bounds the typed number field will accept, for values outside
+   * the slider's own range. The slider itself stays capped at min/max (its
+   * thumb just sits at the end when the typed value goes further); these
+   * only loosen what you're allowed to type. Defaults to min/max.
+   */
+  typedMin?: number
+  typedMax?: number
 }
 
 interface LinearSliderInputFieldProps extends SliderInputFieldCommonProps {
@@ -47,38 +55,39 @@ function isDiscreteField(
 }
 
 export function SliderInputField(props: SliderInputFieldProps) {
-  const { id, label, value, onChange, disabled, unit, prefix, endAction } = props
+  const {
+    id,
+    label,
+    value,
+    onChange,
+    disabled,
+    unit,
+    prefix,
+    endAction,
+    typedMin,
+    typedMax,
+  } = props
   const discrete = isDiscreteField(props)
 
   const min = discrete ? props.steps[0] : props.min
   const max = discrete ? props.steps[props.steps.length - 1] : props.max
 
-  const [text, setText] = React.useState(() => String(value))
-  const [lastValue, setLastValue] = React.useState(value)
-
-  if (value !== lastValue) {
-    setLastValue(value)
-    setText(String(value))
-  }
-
-  function handleTextChange(raw: string) {
-    setText(raw)
-    const parsed = Number(raw)
-    if (raw.trim() !== "" && Number.isFinite(parsed)) {
-      onChange(Math.min(max, Math.max(min, parsed)))
-    }
-  }
-
-  function handleBlur() {
-    setText(String(value))
-  }
+  const { text, handleChange: handleTextChange, handleBlur } = useNumberInputText(
+    value,
+    onChange,
+    { min: typedMin ?? min, max: typedMax ?? max }
+  )
 
   function handleSliderChange(newValue: number | readonly number[]) {
     const nextValue = Array.isArray(newValue) ? newValue[0] : (newValue as number)
     onChange(discrete ? props.steps[nextValue] : nextValue)
   }
 
-  const sliderValue = discrete ? [closestStepIndex(props.steps, value)] : [value]
+  // The slider thumb stays visually capped at the slider's own range even
+  // when the typed value goes further, instead of overflowing the track.
+  const sliderValue = discrete
+    ? [closestStepIndex(props.steps, value)]
+    : [Math.min(max, Math.max(min, value))]
   const sliderMin = discrete ? 0 : min
   const sliderMax = discrete ? props.steps.length - 1 : max
   const sliderStep = discrete ? 1 : props.step

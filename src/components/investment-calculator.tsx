@@ -3,6 +3,14 @@ import { RotateCcw } from "lucide-react"
 
 import { InvestmentChart } from "@/components/investment-chart"
 import { InvestmentSummary } from "@/components/investment-summary"
+import {
+  DEFAULT_DRAWDOWN_YEARS,
+  RetirementDrawdown,
+} from "@/components/retirement-drawdown"
+import {
+  DEFAULT_WITHDRAWAL_RATE_PCT,
+  RetirementIncome,
+} from "@/components/retirement-income"
 import { SliderInputField } from "@/components/slider-input-field"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { Button } from "@/components/ui/button"
@@ -17,7 +25,12 @@ import {
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { Switch } from "@/components/ui/switch"
-import { calculateInvestment, formatYearsMonths } from "@/lib/investment-calculator"
+import {
+  calculateInvestment,
+  calculateRetirementDrawdown,
+  calculateRetirementIncome,
+  formatYearsMonths,
+} from "@/lib/investment-calculator"
 import {
   INITIAL_INVESTMENT_STEPS,
   MONTHLY_CONTRIBUTION_STEPS,
@@ -26,6 +39,7 @@ import {
 const DEFAULT_YEARS = 20
 const DEFAULT_INITIAL_INVESTMENT = 10_000
 const DEFAULT_MONTHLY_CONTRIBUTION = 500
+const DEFAULT_CONTRIBUTION_INCREASE_PCT = 0
 const DEFAULT_ANNUAL_RETURN_PCT = 7
 const DEFAULT_ANNUAL_INFLATION_PCT = 2.5
 const DEFAULT_STOP_CONTRIBUTIONS_ENABLED = false
@@ -43,6 +57,9 @@ export function InvestmentCalculator() {
   const [monthlyContribution, setMonthlyContribution] = React.useState(
     DEFAULT_MONTHLY_CONTRIBUTION
   )
+  const [contributionIncreasePct, setContributionIncreasePct] = React.useState(
+    DEFAULT_CONTRIBUTION_INCREASE_PCT
+  )
   const [annualReturnPct, setAnnualReturnPct] = React.useState(
     DEFAULT_ANNUAL_RETURN_PCT
   )
@@ -54,15 +71,24 @@ export function InvestmentCalculator() {
   const [stopContributionsYears, setStopContributionsYears] = React.useState(
     DEFAULT_STOP_CONTRIBUTIONS_YEARS
   )
+  const [withdrawalRatePct, setWithdrawalRatePct] = React.useState(
+    DEFAULT_WITHDRAWAL_RATE_PCT
+  )
+  const [drawdownYears, setDrawdownYears] = React.useState(
+    DEFAULT_DRAWDOWN_YEARS
+  )
 
   function resetToDefaults() {
     setYears(DEFAULT_YEARS)
     setInitialInvestment(DEFAULT_INITIAL_INVESTMENT)
     setMonthlyContribution(DEFAULT_MONTHLY_CONTRIBUTION)
+    setContributionIncreasePct(DEFAULT_CONTRIBUTION_INCREASE_PCT)
     setAnnualReturnPct(DEFAULT_ANNUAL_RETURN_PCT)
     setAnnualInflationPct(DEFAULT_ANNUAL_INFLATION_PCT)
     setStopContributionsEnabled(DEFAULT_STOP_CONTRIBUTIONS_ENABLED)
     setStopContributionsYears(DEFAULT_STOP_CONTRIBUTIONS_YEARS)
+    setWithdrawalRatePct(DEFAULT_WITHDRAWAL_RATE_PCT)
+    setDrawdownYears(DEFAULT_DRAWDOWN_YEARS)
   }
 
   const effectiveStopYears = Math.min(
@@ -76,6 +102,7 @@ export function InvestmentCalculator() {
         years,
         initialInvestment,
         monthlyContribution,
+        contributionIncreasePct,
         annualReturnPct,
         annualInflationPct,
         contributionStopYears: stopContributionsEnabled
@@ -86,6 +113,7 @@ export function InvestmentCalculator() {
       years,
       initialInvestment,
       monthlyContribution,
+      contributionIncreasePct,
       annualReturnPct,
       annualInflationPct,
       stopContributionsEnabled,
@@ -94,6 +122,20 @@ export function InvestmentCalculator() {
   )
 
   const totalMonths = Math.round(years * 12)
+
+  const retirementIncome = calculateRetirementIncome({
+    finalBalance: summary.finalBalance,
+    inflationMultiplier: summary.inflationMultiplier,
+    withdrawalRatePct,
+  })
+
+  const retirementDrawdown = calculateRetirementDrawdown({
+    startingBalance: summary.finalBalance,
+    withdrawalRatePct,
+    annualReturnPct,
+    annualInflationPct,
+    years: drawdownYears,
+  })
 
   return (
     <div className="mx-auto flex min-h-svh max-w-6xl flex-col gap-[30px] p-6 max-sm:h-svh max-sm:snap-y max-sm:snap-mandatory max-sm:overflow-y-auto max-sm:pb-0">
@@ -104,7 +146,7 @@ export function InvestmentCalculator() {
         <ThemeToggle />
       </header>
 
-      <Card className="max-sm:shrink-0">
+      <Card className="max-sm:shrink-0 max-sm:snap-start max-sm:scroll-mt-[5px]">
         <CardHeader>
           <CardTitle>Your plan</CardTitle>
           <CardDescription>
@@ -132,6 +174,8 @@ export function InvestmentCalculator() {
             max={50}
             step={1}
             unit="yr"
+            typedMin={0}
+            typedMax={100}
           />
           <SliderInputField
             id="initial-investment"
@@ -140,6 +184,8 @@ export function InvestmentCalculator() {
             onChange={setInitialInvestment}
             steps={INITIAL_INVESTMENT_STEPS}
             prefix="$"
+            typedMin={0}
+            typedMax={5_000_000}
           />
           <SliderInputField
             id="monthly-contribution"
@@ -148,6 +194,20 @@ export function InvestmentCalculator() {
             onChange={setMonthlyContribution}
             steps={MONTHLY_CONTRIBUTION_STEPS}
             prefix="$"
+            typedMin={0}
+            typedMax={500_000}
+          />
+          <SliderInputField
+            id="contribution-increase"
+            label="Annual contribution increase"
+            value={contributionIncreasePct}
+            onChange={setContributionIncreasePct}
+            min={0}
+            max={10}
+            step={0.5}
+            unit="%"
+            typedMin={0}
+            typedMax={25}
           />
           <SliderInputField
             id="annual-return"
@@ -158,6 +218,8 @@ export function InvestmentCalculator() {
             max={25}
             step={0.5}
             unit="%"
+            typedMin={0}
+            typedMax={50}
             endAction={
               <Button
                 type="button"
@@ -179,6 +241,8 @@ export function InvestmentCalculator() {
             max={5}
             step={0.25}
             unit="%"
+            typedMin={-10}
+            typedMax={15}
             endAction={
               <Button
                 type="button"
@@ -214,6 +278,8 @@ export function InvestmentCalculator() {
                   max={Math.max(years, 1)}
                   step={1}
                   unit="yr"
+                  typedMin={1}
+                  typedMax={Math.max(years, 1) * 2}
                 />
               ) : (
                 <p className="flex h-[52px] items-center text-sm text-muted-foreground">
@@ -225,34 +291,58 @@ export function InvestmentCalculator() {
         </CardContent>
       </Card>
 
+      <Card className="max-sm:shrink-0 max-sm:snap-start max-sm:scroll-mt-[23px] max-sm:[--card-spacing:--spacing(3)]">
+        <CardHeader>
+          <CardTitle>Growth over time</CardTitle>
+          <CardDescription>
+            Money invested vs. total value, compounding monthly over{" "}
+            {formatYearsMonths(totalMonths)}.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-6 lg:flex-row">
+          <InvestmentChart
+            series={series}
+            totalMonths={totalMonths}
+            className="lg:flex-1"
+          />
+
+          <Separator orientation="vertical" className="hidden lg:block" />
+          <Separator className="lg:hidden" />
+
+          <InvestmentSummary
+            summary={summary}
+            totalMonths={totalMonths}
+            className="lg:w-56"
+          />
+        </CardContent>
+      </Card>
+
       {/* On mobile this wrapper is capped at exactly one viewport tall, with
           the card at its natural height and the spacer below claiming
           whatever room is left over via flex-1. That bounds the max scroll
           position to right where the card is fully visible, instead of a
           fixed-height spacer adding extra scrollable room past it. */}
       <div className="max-sm:flex max-sm:h-svh max-sm:shrink-0 max-sm:flex-col">
-        <Card className="max-sm:shrink-0 max-sm:snap-start max-sm:scroll-mt-[23px] max-sm:[--card-spacing:--spacing(3)]">
+        <Card className="max-sm:shrink-0 max-sm:snap-start max-sm:scroll-mt-6">
           <CardHeader>
-            <CardTitle>Growth over time</CardTitle>
+            <CardTitle>Retirement income</CardTitle>
             <CardDescription>
-              Money invested vs. total value, compounding monthly over{" "}
-              {formatYearsMonths(totalMonths)}.
+              What your final balance could pay out for the rest of your
+              life, using a fixed withdrawal rate.
             </CardDescription>
           </CardHeader>
-          <CardContent className="flex flex-col gap-6 lg:flex-row">
-            <InvestmentChart
-              series={series}
-              totalMonths={totalMonths}
-              className="lg:flex-1"
+          <CardContent className="space-y-6">
+            <RetirementIncome
+              withdrawalRatePct={withdrawalRatePct}
+              onWithdrawalRatePctChange={setWithdrawalRatePct}
+              result={retirementIncome}
             />
-
-            <Separator orientation="vertical" className="hidden lg:block" />
-            <Separator className="lg:hidden" />
-
-            <InvestmentSummary
-              summary={summary}
-              totalMonths={totalMonths}
-              className="lg:w-56"
+            <Separator />
+            <RetirementDrawdown
+              years={drawdownYears}
+              onYearsChange={setDrawdownYears}
+              series={retirementDrawdown.series}
+              trend={retirementDrawdown.trend}
             />
           </CardContent>
         </Card>
