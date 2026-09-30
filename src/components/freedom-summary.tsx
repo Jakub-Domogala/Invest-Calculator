@@ -12,6 +12,7 @@ import {
   currencyFormat,
   locale,
   numberFlowPlugins,
+  percentFormat,
   opacityTiming,
   spinTiming,
   transformTiming,
@@ -43,7 +44,7 @@ export function FreedomSummary({
         label="Time to freedom"
         description={
           summary === null
-            ? "Your spending grows as fast as your portfolio. Invest a larger share or lower lifestyle inflation."
+            ? "Your spending grows as fast as your portfolio. Invest a larger share, raise your salary increase, or lower lifestyle inflation."
             : "Working and investing until your portfolio covers your spending"
         }
         emphasize
@@ -52,7 +53,7 @@ export function FreedomSummary({
         {timeToFreedom(summary)}
       </Stat>
       {summary !== null ? (
-        <div className="flex flex-col gap-5 max-sm:grid max-sm:grid-cols-3 max-sm:gap-3">
+        <div className="flex flex-col gap-5 max-sm:grid max-sm:grid-cols-2 max-sm:gap-3">
           <Stat
             label="Freedom number"
             description="Portfolio needed, in today's money"
@@ -94,6 +95,22 @@ export function FreedomSummary({
             <NumberFlow
               value={summary.monthlySpending}
               format={currencyFormat}
+              locales={locale}
+              plugins={numberFlowPlugins}
+              transformTiming={transformTiming}
+              spinTiming={spinTiming}
+              opacityTiming={opacityTiming}
+            />
+          </Stat>
+          <Stat
+            label="Share invested"
+            description="Of your salary by then"
+            compact
+            explanation={explanations.savingsRateAtFreedom}
+          >
+            <NumberFlow
+              value={summary.savingsRatePctAtFreedom / 100}
+              format={percentFormat}
               locales={locale}
               plugins={numberFlowPlugins}
               transformTiming={transformTiming}

@@ -179,7 +179,7 @@ export function explainFreedom(
 
   const timeToFreedom: StatExplanation = {
     formula:
-      "every month: portfolio = (portfolio + salary × share invested) × (1 + real monthly return), until portfolio ≥ freedom number",
+      "every month: portfolio = (portfolio + salary − spending) × (1 + real monthly return), until portfolio ≥ freedom number",
     filledIn:
       summary === null
         ? `not reached within ${MAX_FREEDOM_MONTHS / 12} years`
@@ -198,11 +198,23 @@ export function explainFreedom(
         value: `(1 + ${formatPercent(inputs.annualReturnPct)}) ÷ (1 + ${formatPercent(inputs.annualInflationPct)}) − 1 = ${formatPercent(realReturnPct)}`,
       },
       {
-        label: "Salary and spending growth",
+        label: "Salary growth",
+        value: `${formatPercent(inputs.salaryIncreasePct)} per year`,
+      },
+      {
+        label: "Spending growth",
         value: `${formatPercent(inputs.lifestyleInflationPct)} per year`,
       },
+      ...(summary === null
+        ? []
+        : [
+            {
+              label: "Share invested by then",
+              value: formatPercent(summary.savingsRatePctAtFreedom, 1),
+            },
+          ]),
     ],
-    note: "Everything is in today's money, so inflation only appears as a lower real return. The freedom number keeps growing with your spending until you reach it.",
+    note: "Everything is in today's money, so inflation only appears as a lower real return. Salary and spending grow on top of prices; what you don't spend is invested. The freedom number keeps growing with your spending until you reach it.",
   }
 
   if (summary === null) {
@@ -245,22 +257,72 @@ export function explainFreedom(
     ],
   }
 
-  const monthlySpending: StatExplanation = {
-    formula:
-      "salary × (1 − share invested) × (1 + lifestyle inflation) ^ years",
-    filledIn: `${formatCurrency(inputs.monthlySalary)} × (1 − ${formatPercent(inputs.savingsRatePct)}) × (1 + ${formatPercent(inputs.lifestyleInflationPct)}) ^ ${years} = ${formatCurrency(summary.monthlySpending)}`,
+  // Spending can't outgrow the salary; once it catches up it follows it.
+  const spendingCapped =
+    summary.monthlySpending <
+    spendingToday *
+      Math.pow(1 + inputs.lifestyleInflationPct / 100, summary.fireMonth / 12) -
+      0.5
+
+  const monthlySpending: StatExplanation = spendingCapped
+    ? {
+        formula: "spending grew until it reached your whole salary",
+        filledIn: `salary after ${years} years = ${formatCurrency(summary.monthlySpending)}`,
+        terms: [
+          { label: "Spending today", value: formatCurrency(spendingToday) },
+          {
+            label: "Lifestyle inflation",
+            value: `${formatPercent(inputs.lifestyleInflationPct)} per year`,
+          },
+          {
+            label: "Salary increase",
+            value: `${formatPercent(inputs.salaryIncreasePct)} per year`,
+          },
+        ],
+        note: "Lifestyle inflation is higher than your salary increase, so spending caught up with your salary and nothing is left to invest.",
+      }
+    : {
+        formula:
+          "salary × (1 − share invested) × (1 + lifestyle inflation) ^ years",
+        filledIn: `${formatCurrency(inputs.monthlySalary)} × (1 − ${formatPercent(inputs.savingsRatePct)}) × (1 + ${formatPercent(inputs.lifestyleInflationPct)}) ^ ${years} = ${formatCurrency(summary.monthlySpending)}`,
+        terms: [
+          { label: "Spending today", value: formatCurrency(spendingToday) },
+          {
+            label: "Lifestyle inflation",
+            value: `${formatPercent(inputs.lifestyleInflationPct)} per year`,
+          },
+          {
+            label: "Time to freedom",
+            value: `${formatYearsMonths(summary.fireMonth)} = ${years} years`,
+          },
+        ],
+      }
+
+  const savingsRateAtFreedom: StatExplanation = {
+    formula: "(salary − spending) ÷ salary, both at freedom",
+    filledIn: `(${formatCurrency(summary.monthlySalary)} − ${formatCurrency(summary.monthlySpending)}) ÷ ${formatCurrency(summary.monthlySalary)} = ${formatPercent(summary.savingsRatePctAtFreedom, 1)}`,
     terms: [
-      { label: "Spending today", value: formatCurrency(spendingToday) },
+      {
+        label: "Share invested today",
+        value: formatPercent(inputs.savingsRatePct),
+      },
+      {
+        label: "Salary increase",
+        value: `${formatPercent(inputs.salaryIncreasePct)} per year`,
+      },
       {
         label: "Lifestyle inflation",
         value: `${formatPercent(inputs.lifestyleInflationPct)} per year`,
       },
-      {
-        label: "Time to freedom",
-        value: `${formatYearsMonths(summary.fireMonth)} = ${years} years`,
-      },
     ],
+    note: "Whatever part of each raise you don't spend is invested, so the share rises when your salary grows faster than your spending and falls when it doesn't.",
   }
 
-  return { timeToFreedom, fireNumber, fireNumberFutureMoney, monthlySpending }
+  return {
+    timeToFreedom,
+    fireNumber,
+    fireNumberFutureMoney,
+    monthlySpending,
+    savingsRateAtFreedom,
+  }
 }

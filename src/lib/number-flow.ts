@@ -11,6 +11,11 @@ export const currencyFormat: Format = {
   maximumFractionDigits: 0,
 }
 
+export const percentFormat: Format = {
+  style: "percent",
+  maximumFractionDigits: 1,
+}
+
 export const multiplierFormat: Format = {
   minimumFractionDigits: 2,
   maximumFractionDigits: 2,

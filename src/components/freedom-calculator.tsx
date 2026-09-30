@@ -24,6 +24,7 @@ import {
 const DEFAULT_CURRENT_SAVINGS = 10_000
 const DEFAULT_MONTHLY_SALARY = 5_000
 const DEFAULT_SAVINGS_RATE_PCT = 20
+const DEFAULT_SALARY_INCREASE_PCT = 2
 const DEFAULT_ANNUAL_RETURN_PCT = 7
 const DEFAULT_ANNUAL_INFLATION_PCT = 2.5
 const DEFAULT_LIFESTYLE_INFLATION_PCT = 1
@@ -43,6 +44,9 @@ export function FreedomCalculator() {
   const [savingsRatePct, setSavingsRatePct] = React.useState(
     DEFAULT_SAVINGS_RATE_PCT
   )
+  const [salaryIncreasePct, setSalaryIncreasePct] = React.useState(
+    DEFAULT_SALARY_INCREASE_PCT
+  )
   const [annualReturnPct, setAnnualReturnPct] = React.useState(
     DEFAULT_ANNUAL_RETURN_PCT
   )
@@ -60,6 +64,7 @@ export function FreedomCalculator() {
     setCurrentSavings(DEFAULT_CURRENT_SAVINGS)
     setMonthlySalary(DEFAULT_MONTHLY_SALARY)
     setSavingsRatePct(DEFAULT_SAVINGS_RATE_PCT)
+    setSalaryIncreasePct(DEFAULT_SALARY_INCREASE_PCT)
     setAnnualReturnPct(DEFAULT_ANNUAL_RETURN_PCT)
     setAnnualInflationPct(DEFAULT_ANNUAL_INFLATION_PCT)
     setLifestyleInflationPct(DEFAULT_LIFESTYLE_INFLATION_PCT)
@@ -71,6 +76,7 @@ export function FreedomCalculator() {
       currentSavings,
       monthlySalary,
       savingsRatePct,
+      salaryIncreasePct,
       annualReturnPct,
       annualInflationPct,
       lifestyleInflationPct,
@@ -80,6 +86,7 @@ export function FreedomCalculator() {
       currentSavings,
       monthlySalary,
       savingsRatePct,
+      salaryIncreasePct,
       annualReturnPct,
       annualInflationPct,
       lifestyleInflationPct,
@@ -133,7 +140,7 @@ export function FreedomCalculator() {
           />
           <SliderInputField
             id="freedom-savings-rate"
-            label="Share of salary invested"
+            label="Share of salary invested today"
             value={savingsRatePct}
             onChange={setSavingsRatePct}
             min={0}
@@ -142,6 +149,18 @@ export function FreedomCalculator() {
             unit="%"
             typedMin={0}
             typedMax={100}
+          />
+          <SliderInputField
+            id="freedom-salary-increase"
+            label="Annual salary increase"
+            value={salaryIncreasePct}
+            onChange={setSalaryIncreasePct}
+            min={0}
+            max={10}
+            step={0.25}
+            unit="%"
+            typedMin={-5}
+            typedMax={25}
           />
           <SliderInputField
             id="freedom-current-savings"
@@ -247,8 +266,9 @@ export function FreedomCalculator() {
           <CardHeader>
             <CardTitle>Path to freedom</CardTitle>
             <CardDescription>
-              In today&apos;s money. Lifestyle inflation is how much your salary
-              and spending grow each year on top of prices; it stops once you
+              In today&apos;s money. Salary increase and lifestyle inflation
+              (how much your spending grows) are both on top of prices; what you
+              don&apos;t spend is invested. Lifestyle inflation stops once you
               are free.
             </CardDescription>
           </CardHeader>
