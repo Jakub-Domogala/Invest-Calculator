@@ -15,7 +15,7 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { calculateFreedom } from "@/lib/freedom-calculator"
+import { calculateFreedom, type FreedomInputs } from "@/lib/freedom-calculator"
 import {
   INITIAL_INVESTMENT_STEPS,
   MONTHLY_SALARY_STEPS,
@@ -66,17 +66,16 @@ export function FreedomCalculator() {
     setWithdrawalRatePct(DEFAULT_WITHDRAWAL_RATE_PCT)
   }
 
-  const { series, summary } = React.useMemo(
-    () =>
-      calculateFreedom({
-        currentSavings,
-        monthlySalary,
-        savingsRatePct,
-        annualReturnPct,
-        annualInflationPct,
-        lifestyleInflationPct,
-        withdrawalRatePct,
-      }),
+  const inputs = React.useMemo<FreedomInputs>(
+    () => ({
+      currentSavings,
+      monthlySalary,
+      savingsRatePct,
+      annualReturnPct,
+      annualInflationPct,
+      lifestyleInflationPct,
+      withdrawalRatePct,
+    }),
     [
       currentSavings,
       monthlySalary,
@@ -86,6 +85,11 @@ export function FreedomCalculator() {
       lifestyleInflationPct,
       withdrawalRatePct,
     ]
+  )
+
+  const { series, summary } = React.useMemo(
+    () => calculateFreedom(inputs),
+    [inputs]
   )
 
   return (
@@ -258,7 +262,11 @@ export function FreedomCalculator() {
             <Separator orientation="vertical" className="hidden lg:block" />
             <Separator className="lg:hidden" />
 
-            <FreedomSummary summary={summary} className="lg:w-56" />
+            <FreedomSummary
+              inputs={inputs}
+              summary={summary}
+              className="lg:w-56"
+            />
           </CardContent>
         </Card>
 

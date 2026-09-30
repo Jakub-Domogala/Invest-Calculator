@@ -1,8 +1,10 @@
 import NumberFlow from "@number-flow/react"
 
 import { Stat } from "@/components/stat"
+import { explainFreedom } from "@/lib/explanations"
 import {
   MAX_FREEDOM_MONTHS,
+  type FreedomInputs,
   type FreedomSummary as FreedomSummaryData,
 } from "@/lib/freedom-calculator"
 import { formatYearsMonths } from "@/lib/investment-calculator"
@@ -25,12 +27,16 @@ function timeToFreedom(summary: FreedomSummaryData | null): string {
 }
 
 export function FreedomSummary({
+  inputs,
   summary,
   className,
 }: {
+  inputs: FreedomInputs
   summary: FreedomSummaryData | null
   className?: string
 }) {
+  const explanations = explainFreedom(inputs, summary)
+
   return (
     <div className={cn("flex flex-col gap-5", className)}>
       <Stat
@@ -41,6 +47,7 @@ export function FreedomSummary({
             : "Working and investing until your portfolio covers your spending"
         }
         emphasize
+        explanation={explanations.timeToFreedom}
       >
         {timeToFreedom(summary)}
       </Stat>
@@ -50,6 +57,7 @@ export function FreedomSummary({
             label="Freedom number"
             description="Portfolio needed, in today's money"
             compact
+            explanation={explanations.fireNumber}
           >
             <NumberFlow
               value={summary.fireNumber}
@@ -65,6 +73,7 @@ export function FreedomSummary({
             label="In future dollars"
             description="The same portfolio at that date's prices"
             compact
+            explanation={explanations.fireNumberFutureMoney}
           >
             <NumberFlow
               value={summary.fireNumberFutureMoney}
@@ -80,6 +89,7 @@ export function FreedomSummary({
             label="Monthly spending"
             description="What it pays out, in today's money"
             compact
+            explanation={explanations.monthlySpending}
           >
             <NumberFlow
               value={summary.monthlySpending}

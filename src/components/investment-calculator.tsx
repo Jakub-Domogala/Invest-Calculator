@@ -30,6 +30,7 @@ import {
   calculateRetirementDrawdown,
   calculateRetirementIncome,
   formatYearsMonths,
+  type InvestmentInputs,
 } from "@/lib/investment-calculator"
 import {
   INITIAL_INVESTMENT_STEPS,
@@ -96,19 +97,18 @@ export function InvestmentCalculator() {
     Math.max(years, 1)
   )
 
-  const { series, summary } = React.useMemo(
-    () =>
-      calculateInvestment({
-        years,
-        initialInvestment,
-        monthlyContribution,
-        contributionIncreasePct,
-        annualReturnPct,
-        annualInflationPct,
-        contributionStopYears: stopContributionsEnabled
-          ? effectiveStopYears
-          : null,
-      }),
+  const inputs = React.useMemo<InvestmentInputs>(
+    () => ({
+      years,
+      initialInvestment,
+      monthlyContribution,
+      contributionIncreasePct,
+      annualReturnPct,
+      annualInflationPct,
+      contributionStopYears: stopContributionsEnabled
+        ? effectiveStopYears
+        : null,
+    }),
     [
       years,
       initialInvestment,
@@ -119,6 +119,11 @@ export function InvestmentCalculator() {
       stopContributionsEnabled,
       effectiveStopYears,
     ]
+  )
+
+  const { series, summary } = React.useMemo(
+    () => calculateInvestment(inputs),
+    [inputs]
   )
 
   const totalMonths = Math.round(years * 12)
@@ -310,6 +315,7 @@ export function InvestmentCalculator() {
           <Separator className="lg:hidden" />
 
           <InvestmentSummary
+            inputs={inputs}
             summary={summary}
             totalMonths={totalMonths}
             className="lg:w-56"
@@ -327,14 +333,16 @@ export function InvestmentCalculator() {
           <CardHeader>
             <CardTitle>Retirement income</CardTitle>
             <CardDescription>
-              What your final balance could pay out for the rest of your
-              life, using a fixed withdrawal rate.
+              What your final balance could pay out for the rest of your life,
+              using a fixed withdrawal rate.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <RetirementIncome
               withdrawalRatePct={withdrawalRatePct}
               onWithdrawalRatePctChange={setWithdrawalRatePct}
+              finalBalance={summary.finalBalance}
+              inflationMultiplier={summary.inflationMultiplier}
               result={retirementIncome}
             />
             <Separator />

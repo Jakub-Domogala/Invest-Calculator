@@ -3,6 +3,7 @@ import NumberFlow from "@number-flow/react"
 import { SliderInputField } from "@/components/slider-input-field"
 import { Stat } from "@/components/stat"
 import { Button } from "@/components/ui/button"
+import { explainRetirementIncome } from "@/lib/explanations"
 import type { RetirementIncomeResult } from "@/lib/investment-calculator"
 import {
   currencyFormat,
@@ -19,14 +20,26 @@ export const DEFAULT_WITHDRAWAL_RATE_PCT = 4
 export function RetirementIncome({
   withdrawalRatePct,
   onWithdrawalRatePctChange,
+  finalBalance,
+  inflationMultiplier,
   result,
   className,
 }: {
   withdrawalRatePct: number
   onWithdrawalRatePctChange: (value: number) => void
+  /** The balance and inflation multiplier the result was calculated from. */
+  finalBalance: number
+  inflationMultiplier: number
   result: RetirementIncomeResult
   className?: string
 }) {
+  const explanations = explainRetirementIncome({
+    finalBalance,
+    inflationMultiplier,
+    withdrawalRatePct,
+    result,
+  })
+
   return (
     <div className={cn("flex flex-col gap-6", className)}>
       <SliderInputField
@@ -46,14 +59,21 @@ export function RetirementIncome({
             variant="outline"
             size="xs"
             aria-label={`Set to the ${DEFAULT_WITHDRAWAL_RATE_PCT}% rule`}
-            onClick={() => onWithdrawalRatePctChange(DEFAULT_WITHDRAWAL_RATE_PCT)}
+            onClick={() =>
+              onWithdrawalRatePctChange(DEFAULT_WITHDRAWAL_RATE_PCT)
+            }
           >
             4% rule
           </Button>
         }
       />
       <div className="grid grid-cols-3 gap-4 max-sm:gap-3">
-        <Stat label="Annual withdrawal" description="At this rate, per year" compact>
+        <Stat
+          label="Annual withdrawal"
+          description="At this rate, per year"
+          compact
+          explanation={explanations.annualWithdrawal}
+        >
           <NumberFlow
             value={result.annualWithdrawal}
             format={currencyFormat}
@@ -64,7 +84,12 @@ export function RetirementIncome({
             opacityTiming={opacityTiming}
           />
         </Stat>
-        <Stat label="Monthly withdrawal" description="Annual, divided by 12" compact>
+        <Stat
+          label="Monthly withdrawal"
+          description="Annual, divided by 12"
+          compact
+          explanation={explanations.monthlyWithdrawal}
+        >
           <NumberFlow
             value={result.monthlyWithdrawal}
             format={currencyFormat}
@@ -79,6 +104,7 @@ export function RetirementIncome({
           label="Monthly, today's money"
           description="Adjusted for inflation"
           compact
+          explanation={explanations.monthlyWithdrawalTodaysMoney}
         >
           <NumberFlow
             value={result.monthlyWithdrawalTodaysMoney}

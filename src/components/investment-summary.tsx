@@ -1,7 +1,11 @@
 import NumberFlow from "@number-flow/react"
 
 import { Stat } from "@/components/stat"
-import type { InvestmentSummary as InvestmentSummaryData } from "@/lib/investment-calculator"
+import { explainInvestment } from "@/lib/explanations"
+import type {
+  InvestmentInputs,
+  InvestmentSummary as InvestmentSummaryData,
+} from "@/lib/investment-calculator"
 import { formatYearsMonths } from "@/lib/investment-calculator"
 import {
   currencyFormat,
@@ -15,20 +19,25 @@ import {
 import { cn } from "@/lib/utils"
 
 export function InvestmentSummary({
+  inputs,
   summary,
   totalMonths,
   className,
 }: {
+  inputs: InvestmentInputs
   summary: InvestmentSummaryData
   totalMonths: number
   className?: string
 }) {
+  const explanations = explainInvestment(inputs, summary)
+
   return (
     <div className={cn("flex flex-col gap-5", className)}>
       <Stat
         label="Final balance"
         description={`After ${formatYearsMonths(totalMonths)}`}
         emphasize
+        explanation={explanations.finalBalance}
       >
         <NumberFlow
           value={summary.finalBalance}
@@ -45,6 +54,7 @@ export function InvestmentSummary({
           label="Total contributions"
           description="Initial + monthly, paid in"
           compact
+          explanation={explanations.totalContributions}
         >
           <NumberFlow
             value={summary.totalContributions}
@@ -56,7 +66,12 @@ export function InvestmentSummary({
             opacityTiming={opacityTiming}
           />
         </Stat>
-        <Stat label="Inflation multiplier" description="Prices vs. today" compact>
+        <Stat
+          label="Inflation multiplier"
+          description="Prices vs. today"
+          compact
+          explanation={explanations.inflationMultiplier}
+        >
           <NumberFlow
             value={summary.inflationMultiplier}
             format={multiplierFormat}
@@ -72,6 +87,7 @@ export function InvestmentSummary({
           label="Inflation-adjusted balance"
           description="Final balance in today's money"
           compact
+          explanation={explanations.inflationAdjustedBalance}
         >
           <NumberFlow
             value={summary.inflationAdjustedBalance}
