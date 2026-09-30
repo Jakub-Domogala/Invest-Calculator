@@ -1,5 +1,13 @@
 import * as React from "react"
-import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts"
+import {
+  Area,
+  CartesianGrid,
+  ComposedChart,
+  Line,
+  ReferenceLine,
+  XAxis,
+  YAxis,
+} from "recharts"
 
 import {
   ChartContainer,
@@ -7,20 +15,21 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart"
+import type { FreedomDataPoint } from "@/lib/freedom-calculator"
 import {
-  computeTickStepYears,
-  type RetirementDrawdownPoint,
+  computeTickStepMonths,
+  formatYearsMonths,
 } from "@/lib/investment-calculator"
 import { cn } from "@/lib/utils"
 
 const chartConfig = {
-  withdrawal: {
-    label: "Withdrawal",
-    color: "var(--chart-3)",
-  },
-  withdrawalTodaysMoney: {
-    label: "Today's money",
+  target: {
+    label: "Needed for freedom",
     color: "var(--chart-4)",
+  },
+  balance: {
+    label: "Your portfolio",
+    color: "var(--chart-2)",
   },
 } satisfies ChartConfig
 
@@ -37,75 +46,56 @@ function formatCurrency(value: number): string {
   return `$${currencyFormatter.format(Math.round(value))}`
 }
 
-export function RetirementDrawdownChart({
+export function FreedomChart({
   series,
-  years,
+  fireMonth,
   className,
 }: {
-  series: RetirementDrawdownPoint[]
-  years: number
+  series: FreedomDataPoint[]
+  /** Marked on the chart when freedom is reached. */
+  fireMonth: number | null
   className?: string
 }) {
-  const tickStep = computeTickStepYears(years)
+  const totalMonths = series[series.length - 1]?.month ?? 0
+  const tickStep = computeTickStepMonths(totalMonths)
   const ticks = React.useMemo(() => {
     const values: number[] = []
-    for (let year = 0; year <= years; year += tickStep) {
-      values.push(year)
-    }
-    if (values[values.length - 1] !== years) {
-      values.push(years)
+    for (let month = 0; month <= totalMonths; month += tickStep) {
+      values.push(month)
     }
     return values
-  }, [years, tickStep])
+  }, [totalMonths, tickStep])
 
   return (
     <ChartContainer
       config={chartConfig}
       className={cn(
-        "aspect-auto h-56 w-full min-w-0 touch-pan-y sm:h-64",
+        "aspect-auto h-56 w-full min-w-0 touch-pan-y sm:h-80",
         className
       )}
     >
-      <AreaChart data={series} margin={{ left: 0, right: 8, top: 8 }}>
+      <ComposedChart data={series} margin={{ left: 0, right: 8, top: 8 }}>
         <defs>
-          <linearGradient id="fill-withdrawal" x1="0" y1="0" x2="0" y2="1">
+          <linearGradient id="fill-balance" x1="0" y1="0" x2="0" y2="1">
             <stop
               offset="5%"
-              stopColor="var(--color-withdrawal)"
+              stopColor="var(--color-balance)"
               stopOpacity={0.35}
             />
             <stop
               offset="95%"
-              stopColor="var(--color-withdrawal)"
-              stopOpacity={0.05}
-            />
-          </linearGradient>
-          <linearGradient
-            id="fill-withdrawalTodaysMoney"
-            x1="0"
-            y1="0"
-            x2="0"
-            y2="1"
-          >
-            <stop
-              offset="5%"
-              stopColor="var(--color-withdrawalTodaysMoney)"
-              stopOpacity={0.35}
-            />
-            <stop
-              offset="95%"
-              stopColor="var(--color-withdrawalTodaysMoney)"
+              stopColor="var(--color-balance)"
               stopOpacity={0.05}
             />
           </linearGradient>
         </defs>
         <CartesianGrid vertical={false} />
         <XAxis
-          dataKey="year"
+          dataKey="month"
           type="number"
-          domain={[1, Math.max(years, 1)]}
+          domain={[0, Math.max(totalMonths, 1)]}
           ticks={ticks}
-          tickFormatter={(value: number) => `${value}y`}
+          tickFormatter={formatYearsMonths}
           tickLine={false}
           axisLine={false}
           tickMargin={8}
@@ -122,7 +112,7 @@ export function RetirementDrawdownChart({
           content={
             <ChartTooltipContent
               labelFormatter={(_, payload) =>
-                `Year ${payload?.[0]?.payload?.year ?? 0}`
+                formatYearsMonths(Number(payload?.[0]?.payload?.month ?? 0))
               }
               formatter={(value, name, item) => (
                 <div className="flex w-full items-center justify-between gap-4">
@@ -145,26 +135,40 @@ export function RetirementDrawdownChart({
           }
         />
         <Area
-          dataKey="withdrawal"
+          dataKey="balance"
           type="monotone"
-          fill="url(#fill-withdrawal)"
-          stroke="var(--color-withdrawal)"
+          fill="url(#fill-balance)"
+          stroke="var(--color-balance)"
           strokeWidth={2}
           isAnimationActive
           animationDuration={300}
           animationEasing="ease-out"
         />
-        <Area
-          dataKey="withdrawalTodaysMoney"
+        <Line
+          dataKey="target"
           type="monotone"
-          fill="url(#fill-withdrawalTodaysMoney)"
-          stroke="var(--color-withdrawalTodaysMoney)"
+          stroke="var(--color-target)"
           strokeWidth={2}
+          strokeDasharray="6 4"
+          dot={false}
           isAnimationActive
           animationDuration={300}
           animationEasing="ease-out"
         />
-      </AreaChart>
+        {fireMonth !== null && fireMonth > 0 ? (
+          <ReferenceLine
+            x={fireMonth}
+            stroke="var(--muted-foreground)"
+            strokeDasharray="2 4"
+            label={{
+              value: "Free",
+              position: "insideTopLeft",
+              fill: "var(--muted-foreground)",
+              fontSize: 12,
+            }}
+          />
+        ) : null}
+      </ComposedChart>
     </ChartContainer>
   )
 }
